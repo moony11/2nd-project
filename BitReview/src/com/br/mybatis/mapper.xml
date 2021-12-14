@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="br">
+
+	<select id="mList" resultType="com.br.model.member.memberDTO">
+		SELECT * FROM MEMBER ORDER BY MEMBER_ID
+	</select>
+	
+	<select id="getMemberId" resultType="String">
+		SELECT MEMBER_ID FROM MEMBER WHERE LOGIN_ID = #{login_id}
+	</select>
+
+	<!--  회원가입 -->
+	<!-- insert into MEMBER (MEMBER_ID, NICKNAME, NAME, PHONE, EMAIL, LOGIN_ID, LOGIN_PW, BIRTH) values(seq_num.nextval, #{nickName}, #{name}, #{phone}, #{email1}+"@"+#{email2}, #{logId}, #{logPw}, #{birthyy}) -->
+	<insert id="insertMember" parameterType="member">
+		insert into MEMBER (MEMBER_ID, NICKNAME, NAME, PHONE, EMAIL, LOGIN_ID, LOGIN_PW, BIRTH) values(MEMBER_SEQ.NEXTVAL, #{nickName}, #{name}, #{phone}, #{email}, #{login_id}, #{login_pw}, #{birth})
+	</insert>
+	
+	<!--  중복아이디 확인 -->
+	<select id="idCheck" parameterType="String" resultType="String">
+		SELECT LOGIN_ID FROM MEMBER WHERE LOGIN_ID = #{login_id}
+	</select>
+
+	
+	<!-- 비번확인 -->
+	<select id="loginCheck" parameterType="String" resultType="String">
+		SELECT LOGIN_PW FROM MEMBER WHERE LOGIN_ID= #{login_id}
+	</select>
+	
+	<!-- 유저정보 확인 -->
+	<select id="getUserInfo" parameterType="String" resultType="member">
+		SELECT * FROM MEMBER WHERE LOGIN_ID= #{login_id}
+	</select>
+	
+	<!-- 회원삭제 -->
+	<delete id="deleteMember" parameterType="String">
+		DELETE FROM MEMBER WHERE LOGIN_ID= #{login_id}
+	</delete>
+	
+	<!-- 회원정보 수정 -->
+	<update id="updateMember" parameterType="member">
+		UPDATE MEMBER SET LOGIN_PW = #{login_pw}, EMAIL = #{email}, PHONE=#{phone} WHERE LOGIN_ID = #{login_id} 
+	</update>
+	
+	<!--  tv -->
+	<!-- 
+	<resultMap type="BoardVO" id="BoardVO">
+		<result column="tp_boardid" property="tp_boardid"/>
+		<result column="writer" property="writer"/>
+		<result column="title" property="title"/>
+		<result column="b_regdate" property="b_regdate"/>
+		<result column="b_content" property="b_content"/>
+		<result column="updatedate" property="updatedate"/>
+		<result column="deletedate" property="deletedate"/>
+		<result column="hit" property="hit"/>
+		<result column="tp_id" property="tp_id"/>
+		<result column="b_updown" property="b_updown"/>
+		<result column="f_id" property="f_id"/>
+		<result column="f_name" property="f_name"/>
+		<result column="f_path" property="f_path"/>
+		<result column="tp_name" property="tp_name"/>
+		<collection property="replyvo" resultMap="replyvo"/>
+	</resultMap>
+	
+	<resultMap type="BoardVO" id="BoardVO">
+		<result column="tp_replyid" property="tp_replyid"/>
+		<result column="tp_boardid" property="tp_boardid"/>
+		<result column="r_writer" property="r_writer"/>
+		<result column="r_content" property="r_content"/>
+		<result column="r_regdate" property="r_regdate"/>
+		<result column="r_updown" property="r_updown"/>
+	</resultMap>
+	-->
+
+	
+	<!-- 글 작성 insert 
+	<insert id="insert" parameterType="bVO">
+		INSERT INTO BOARD 
+				(TP_BOARDID, MEMBER_ID, WRITER, TITLE, B_CONTENT, B_REGDATE,
+				 HIT, B_UPDOWN, TP_ID, F_ID,
+				 F_NAME, F_PATH)
+		VALUES 
+				(BOARD_SEQ.NEXTVAL, #{member_id},#{writer}, #{title}, #{b_content}, SYSDATE,
+				0, 0, #{tp_id}, FILE_SEQ.nextval,
+				 #{f_name}, #{f_path})
+	</insert>
+	 -->
+	<insert id="insert" parameterType="bVO">
+		INSERT INTO BOARD 
+				(TP_BOARDID, MEMBER_ID, TITLE, WRITER, B_CONTENT, B_REGDATE, HIT, B_UPDOWN, TP_ID, F_ID, F_NAME, F_PATH)
+		VALUES 
+				(BOARD_SEQ.NEXTVAL, #{member_id}, #{title}, #{writer}, #{b_content}, SYSDATE, 0, 0, #{tp_id}, FILE_SEQ.nextval, #{f_name}, #{f_path})
+	</insert>	
+	<!-- 글 전체 목록 불러오기 -->
+	<select id="blist" resultType="bVO" parameterType="String">
+		SELECT B.*, T.TP_NAME, T.TP_GENRE, T.TP_BRDCS, T.TP_COUNTRY
+		FROM BOARD B, TVPROGRAM T
+		WHERE 1 = 1
+		<choose>
+			<when test="idx == 0">
+				AND B.TP_ID = T.TP_ID
+				ORDER BY TP_BOARDID
+			</when>
+			<when test="idx == 1">
+				AND B.TP_ID = T.TP_ID
+				ORDER BY HIT DESC
+			</when>
+			<when test="idx == 2">
+				AND B.TP_ID = T.TP_ID
+				ORDER BY B_REGDATE DESC
+			</when>
+			<when test="idx == 3">
+				AND B.TP_ID = T.TP_ID
+				ORDER BY B_REGDATE
+			</when>
+		</choose>
+	</select>
+	
+	<!-- 글 상세보기 -->
+	<select id="one" resultType="bVO"  parameterType="int">
+		SELECT TP_BOARDID, TITLE, WRITER, B_CONTENT, B_REGDATE, b.tp_id, HIT, B_UPDOWN, T.TP_NAME, F_NAME
+		FROM BOARD B, TVPROGRAM T
+		WHERE t.tp_id = b.tp_id AND TP_BOARDID = #{tp_boardid}
+
+	</select>
+	
+	<!-- 글 수정하기 -->
+	<update id="updateTp" parameterType="bVO">
+	   UPDATE BOARD 
+	   SET
+	      TITLE = #{title},
+	      B_CONTENT = #{b_content},
+	      UPDATEDATE = SYSDATE,
+	      TP_ID = #{tp_id},
+	      F_NAME = #{f_name},
+	      F_PATH = #{f_path}
+	   WHERE TP_BOARDID = #{tp_boardid}
+	</update>
+	
+	
+	<!-- 댓글 작성하기 -->
+	<insert id="replyInsert" parameterType="rVO">		
+		INSERT INTO REPLY (TP_REPLYID, TP_BOARDID, R_WRITER, R_CONTENT, R_REGDATE, R_UPDOWN) 
+		VALUES (REPLY_SEQ.NEXTVAL, #{tp_boardid}, #{r_writer}, #{r_content}, SYSDATE, 0)
+	</insert>
+	
+	<!-- 해당 글 댓글 전체 불러오기 -->
+	<select id="rlist" resultType="rVO" parameterType="int">
+		SELECT TP_REPLYID, TP_BOARDID, R_WRITER, R_CONTENT, R_REGDATE, R_UPDOWN
+		FROM REPLY
+		WHERE TP_BOARDID = #{tp_boardid}
+		ORDER BY r_REGDATE
+	</select>
+	
+	<!-- tv프로그램 목록 가져오기 -->
+	<select id="tplist" resultType="tpVO">
+		SELECT TP_ID, TP_NAME, TP_MEMBER, TP_RATION, TP_GENRE, TP_BRDCS, TP_COUNTRY, TP_CONTENT
+		FROM TVPROGRAM 
+	</select>
+	
+	<!-- Tv프로그램 상세보기 -->
+	<select id="tpone" resultType="tpVO" parameterType="int">
+		SELECT *
+		FROM TVPROGRAM
+		WHERE TP_ID = #{tp_id}
+	</select>
+	
+	<!--  조회수 올리기 -->
+	<update id="viewcnt" parameterType="int">
+		UPDATE BOARD 
+		SET
+			HIT = HIT + 1
+		WHERE TP_BOARDID = #{tp_boardid}
+	</update>
+	
+	
+	<!-- 댓글 수정전 불러오기 -->
+	<select id="oneReply" parameterType="int" resultType="rVO">
+		SELECT *
+		FROM REPLY
+		WHERE TP_REPLYID = #{tp_replyid}
+	</select>
+	
+	<!-- 댓글 수정 완료 -->
+	<update id="rupdate" parameterType="rVO" >
+		UPDATE REPLY
+		SET 
+		R_CONTENT = #{r_content}
+		WHERE TP_REPLYID = #{tp_replyid}
+	</update>
+		
+	<!-- 글 삭제하기(안보이게만 처리) -->
+	<update id="deleteTp" parameterType="int">
+		UPDATE BOARD
+		SET
+		OPEN = 1
+		WHERE TP_BOARDID = #{tp_boardid}
+	</update>
+
+	<!-- 댓글 삭제하기 -->
+	<delete id="deleteReply" parameterType="int">
+		DELETE REPLY
+		WHERE TP_REPLYID = #{tp_replyid}
+	</delete>
+
+	<!--======== mainList 페이지 ======== -->
+	<!-- 평점순조회 -->
+	<select id="gradeList" resultType="com.br.model.vo.MovieVO">
+ 	 SELECT * FROM MOVIE M JOIN
+     (SELECT MOVIE_ID, ROUND(AVG(MOVIE_SCORE), 1) AS STT FROM MOVIE_SCORE
+     GROUP BY MOVIE_ID
+     ORDER BY AVG(MOVIE_SCORE) DESC) S
+    ON M.MOVIE_ID = S.MOVIE_ID
+	</select>
+
+	<!-- 위시순조회 -->
+	<select id="wishList" resultType="com.br.model.vo.MovieVO">
+	 SELECT * FROM MOVIE M JOIN
+     (SELECT MOVIE_ID, COUNT(WISH) AS WANT FROM MOVIE_SCORE
+     GROUP BY MOVIE_ID
+     ORDER BY COUNT(WISH) DESC) S
+     ON M.MOVIE_ID = S.MOVIE_ID
+	</select>
+	
+
+	<!-- 장르별조회 -->
+	<select id="genreList" resultType="com.br.model.vo.MovieVO">
+	 SELECT * FROM MOVIE WHERE GENRE = '액션' <!-- 어떻게 할건지 정하기 -->
+	</select>
+	
+	<!-- ======== 영화 상세페이지 ======== -->
+	<!-- 영화 리스트 조회 -->
+	<select id="selectList" resultType="com.br.model.vo.MovieVO">
+	 SELECT * FROM MOVIE 
+	</select>
+	
+	<!-- 영화 정보 조회 --> 
+	<select id="movieInfo" resultType="com.br.model.vo.MovieVO">
+	 SELECT * FROM MOVIE WHERE MOVIE_ID = #{movie_id} 
+	</select>
+	
+	<!-- 영화 리스트 조회 -->
+	<select id="reviewList" resultType="com.br.model.vo.MovieBoardVO">
+	 SELECT * FROM MOVIEBOARD 
+	</select>
+	
+	<!-- 리뷰 2개 조회 -->
+	<select id="review" resultType="com.br.model.vo.MovieBoardVO" parameterType="int">
+	 <![CDATA[
+	 SELECT * FROM
+	(SELECT B.*, M.NICKNAME FROM MOVIEBOARD B, MEMBER M 
+	 WHERE B.MEMBER_ID = M.MEMBER_ID
+     AND MOVIE_ID = #{movie_id} 
+ 	 ORDER BY BOARD_ID DESC) WHERE ROWNUM <= 2
+	 ]]>
+	</select>
+	 
+	
+	<!-- ======= 리뷰 목록 페이지 ==========  -->
+	<!-- 전체 게시글 갯수 조회 -->
+	<select id="totalCount" resultType="int">
+		SELECT COUNT(*) AS CNT FROM MOVIEBOARD WHERE MOVIE_ID = #{movie_id}
+	</select>
+
+ 	<!-- 페이지에 해당하는 게시글 조회 -->
+	<select id="list" resultType="com.br.model.vo.MovieBoardVO"
+			parameterType="map">
+		 SELECT * FROM (
+		 SELECT ROWNUM R_NUM, B.* 
+   		 FROM (SELECT R.*, M.NICKNAME FROM MOVIEBOARD R, MEMBER M
+         WHERE R.MEMBER_ID = M.MEMBER_ID
+         AND R.MOVIE_ID = #{movie_id}
+         AND R.DEL = 1
+         ORDER BY BOARD_ID DESC) B
+          ) WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<!-- 게시글 하나 조회 -->
+	<select id="mOne" resultType="com.br.model.vo.MovieBoardVO" parameterType="int">
+		SELECT B.*, M.NICKNAME 
+ 	    FROM MOVIEBOARD B, MEMBER M
+	    WHERE B.MEMBER_ID = M.MEMBER_ID
+   		AND B.BOARD_ID = #{board_id}
+	</select>
+	
+	
+	<!-- 조회수 증가 -->
+	<update id="hit" parameterType="com.br.model.vo.MovieBoardVO">
+		UPDATE MOVIEBOARD SET HIT = HIT + 1 WHERE BOARD_ID = #{board_id}
+	</update>
+	
+  
+  	<!--글 작성  -->
+ 	<insert id="mInsert" parameterType="com.br.model.vo.MovieBoardVO">
+		INSERT INTO MOVIEBOARD
+        (BOARD_ID, MOVIE_ID, MEMBER_ID, SUBJECT, BOARD_CONTENT, BOARD_DATE, HIT, DEL)
+		VALUES (MOVIEBOARD_SEQ.NEXTVAL, #{movie_id}, #{member_id}, #{subject}, #{board_content}, SYSDATE, 0, 1)
+	</insert>
+	<!--글 수정 -->
+	<update id="update" parameterType ="com.br.model.vo.MovieBoardVO">
+		UPDATE MOVIEBOARD 
+ 	  	SET SUBJECT = #{subject}, 
+      	BOARD_CONTENT = #{board_content}, 
+      	BOARD_DATE = SYSDATE 
+ 		WHERE BOARD_ID = #{board_id}
+	</update>
+	<!--글 삭제 -->
+	<update id="delete" parameterType="int">
+		UPDATE MOVIEBOARD 
+  	    SET DEL = 2
+	    WHERE BOARD_ID = #{board_id}
+	</update>
+	
+	<!-- ======= 댓글 관련 SQL ============== -->
+	<!-- 게시글에 딸린 댓글 조회 -->
+	<select id="commList" resultType="com.br.model.vo.MovieReplyVO"
+			parameterType="int">
+		SELECT R.*, M.NICKNAME 
+        FROM MOVIEREPLY R, MEMBER M
+        WHERE R.MEMBER_ID = M.MEMBER_ID
+        AND R.BOARD_ID = #{board_id}
+        AND R.DEL = 1
+        ORDER BY REPLY_DATE DESC
+	</select>
+	
+	<select id="commOne" resultType="com.br.model.vo.MovieReplyVO"
+			parameterType="int">
+		SELECT R.*, M.NICKNAME 
+		FROM MOVIEREPLY R, MEMBER M
+		WHERE R.MEMBER_ID = M.MEMBER_ID
+		AND R.REPLY_ID =  #{reply_id}
+	</select>
+	
+	<!-- 댓글 등록  -->
+	<insert id="mReplyInsert" parameterType="com.br.model.vo.MovieReplyVO">
+		INSERT INTO MOVIEREPLY
+        (REPLY_ID, BOARD_ID, MEMBER_ID, REPLY_CONTENT, REPLY_DATE, DEL)
+		VALUES (MOVIEREPLY_SEQ.NEXTVAL, #{board_id}, #{member_id}, #{reply_content}, SYSDATE, 1)
+	</insert>
+	
+	<!-- 댓글 수정  -->
+	<update id="replyUpdate" parameterType="com.br.model.vo.MovieReplyVO">
+		UPDATE MOVIEREPLY 
+   		SET REPLY_CONTENT = #{reply_content}, 
+        REPLY_DATE = SYSDATE 
+ 		WHERE REPLY_ID = #{reply_id}
+	</update>
+	
+	<!-- 댓글 삭제  -->
+	<delete id="replyDelete" parameterType="int">
+		UPDATE MOVIEREPLY 
+   		SET DEL = 2
+ 		WHERE REPLY_ID = #{reply_id}
+	</delete>
+	
+	<!-- 로그인 
+	<select id="login" resultType="member">
+		SELECT * FROM MEMBER WHERE LOGIN_ID = #{login_id} AND LOGIN_PW = #{login_pw} 
+	</select>
+	-->
+	
+	
+	<!-- 보고싶어요 증가 
+	<update id="wish" parameterType="com.br.model.vo.MovieScoreVO">
+		UPDATE MOVIE_SCORE 
+   		SET WISH = #{wish} + 1 
+	    WHERE MOVIE_ID = #{movie_id}
+ 	    AND MEMBER_ID = 1
+	</update>
+	-->
+
+	<insert id="wish" parameterType="com.br.model.vo.MovieScoreVO">
+      INSERT INTO MOVIE_SCORE
+        (MEMBER_ID, MOVIE_ID, WISH)
+      VALUES (#{member_id}, #{movie_id}, 1)
+   </insert>
+   
+   <!-- 위시, 별점 조회 -->
+   <select id="scoreOne" resultType="int">
+      SELECT COUNT(*) FROM (SELECT DISTINCT(MEMBER_ID) FROM MOVIE_SCORE WHERE MOVIE_ID = #{movie_id})
+   </select>
+	
+	
+	
+	
+	
+	
+	<!-- book -->
+	
+		<!-- 전체 카테고리 평론가 평점 순위 -->
+   <select id="allcatecrrank" resultType="book">
+      SELECT B.B_ID, B.B_WR_ID, B.B_NAME, W.B_WRITER
+       FROM BOOK B INNER JOIN B_CRITIC C
+       ON B.B_ID = C.B_ID INNER JOIN B_WRITER_T W
+       ON B.B_WR_ID = W.B_WR_ID
+       GROUP BY B.B_ID, B.B_WR_ID, B.B_NAME, W.B_WRITER
+       ORDER BY AVG(B_C_POINT) DESC
+   </select>
+   <select id="allcatecrrank_wr_name" resultType="bookwriter">
+      SELECT B.B_ID, B.B_WR_ID, B.B_NAME, W.B_WRITER
+       FROM BOOK B INNER JOIN B_CRITIC C
+       ON B.B_ID = C.B_ID INNER JOIN B_WRITER_T W
+       ON B.B_WR_ID = W.B_WR_ID
+       GROUP BY B.B_ID, B.B_WR_ID, B.B_NAME, W.B_WRITER
+       ORDER BY AVG(B_C_POINT) DESC
+   </select>
+	
+	<!-- 전체 카테고리 유저 평점 순위 -->
+	<select id="allcateuserrank" resultType="book">
+		SELECT B.B_ID, B.B_WR_ID, B.B_NAME, AVG(SC.BOOK_SCORE)
+		FROM BOOK B INNER JOIN BOOK_SCORE SC
+		ON B.B_ID = SC.B_ID
+		GROUP BY B.B_ID, B.B_WR_ID, B.B_NAME
+		ORDER BY AVG(SC.BOOK_SCORE) DESC
+	</select>
+	<select id="allcateuserrank_wr_name" resultType="bookwriter">
+		SELECT B.B_ID, B.B_WR_ID, B.B_NAME, W.B_WRITER, AVG(SC.BOOK_SCORE)
+		FROM BOOK B INNER JOIN BOOK_SCORE SC
+		ON B.B_ID = SC.B_ID INNER JOIN B_WRITER_T W
+        ON B.B_WR_ID = W.B_WR_ID
+		GROUP BY B.B_ID, B.B_WR_ID, B.B_NAME, W.B_WRITER
+		ORDER BY AVG(SC.BOOK_SCORE) DESC
+	</select>
+	
+	<!-- =================================================================== -->
+	
+	<!-- 선택한 책 번호로 도서 정보 호출 -->
+	<select id="selectone_book" resultType="book">
+		SELECT *
+		FROM BOOK
+		WHERE B_ID = #{bookid}
+	</select>
+	
+	<!-- 선택한 책 번호로 저자 정보 호출 -->
+	<select id="selectone_bookWriter" resultType="bookwriter">
+		SELECT *
+	    FROM b_writer_t
+	    WHERE b_wr_id = #{bookwriterid}
+	</select>
+	
+	<!-- 선택한 책 번호로 평론가 정보 호출 -->
+	<select id="selectone_bookCritic" resultType="bookcritic">
+		SELECT *
+		FROM b_critic
+		WHERE b_id = #{bookid}
+	</select>
+	
+	<!-- 선택한 책 번호로 일반 리뷰 정보 호출 -->
+	<select id="selectone_bookReview" resultType="bookreview">
+		SELECT *
+		FROM b_review
+		WHERE b_id = #{bookid}
+		ORDER BY R_ID
+	</select>
+	
+	<!-- 선택한 책 번호로 판매처 정보 호출 -->
+	<select id="selectone_bookstore" resultType="bookstore">
+		SELECT *
+		FROM B_STORE
+		WHERE B_ID = #{bookid}
+	</select>
+	
+	<!-- 선택한 저자 번호로 관련된 책 정보 호출 -->
+	<select id="selectone_writerid" resultType="book">
+		SELECT B_ID, B_NAME
+		FROM BOOK B INNER JOIN B_WRITER_T W
+		ON B.B_WR_ID = W.B_WR_ID 
+		WHERE B.B_WR_ID = #{bookwriterid}
+	</select>
+	
+	<!-- =================================================================== -->
+	
+	<!-- 선택한 카테고리 평론가 평점 순위 호출 -->
+	<select id="selectcate_catecrrank" resultType="book">	
+		SELECT B.B_ID, B.B_NAME, B.B_CATEGORY, B.B_WR_ID, AVG(BC.B_C_POINT)
+		FROM BOOK B INNER JOIN B_CRITIC BC
+		ON B.B_ID = BC.B_ID
+        WHERE b.b_category = #{CATE}
+		GROUP BY B.B_ID, B.B_NAME, B.B_CATEGORY, B.B_WR_ID
+		ORDER BY AVG(BC.B_C_POINT) DESC
+	</select>
+	<select id="selectcate_catecrrank_wr_name" resultType="bookwriter">
+		SELECT B.B_ID, B.B_NAME, B.B_CATEGORY, B.B_WR_ID, W.B_WRITER, AVG(BC.B_C_POINT)
+		FROM BOOK B INNER JOIN B_CRITIC BC
+		ON B.B_ID = BC.B_ID INNER JOIN B_WRITER_T W
+        ON B.B_WR_ID = W.B_WR_ID
+        WHERE b.b_category = #{CATE}
+		GROUP BY B.B_ID, B.B_NAME, B.B_CATEGORY, B.B_WR_ID, W.B_WRITER
+		ORDER BY AVG(BC.B_C_POINT) DESC
+	</select>
+	
+	<!-- 선택한 카테고리 일반사용자 평점 순위 호출 -->
+	<select id="selectcate_cateuserrank" resultType="book">	
+		SELECT B.B_ID, B.B_NAME, B.B_CATEGORY, B.B_WR_ID, AVG(SC.BOOK_SCORE)
+		FROM BOOK B INNER JOIN BOOK_SCORE SC
+		ON B.B_ID = SC.B_ID
+		WHERE b.b_category = #{CATE}
+		GROUP BY B.B_ID, B.B_NAME, B.B_CATEGORY, B.B_WR_ID
+		ORDER BY AVG(SC.BOOK_SCORE) DESC
+	</select>
+	<select id="selectcate_cateuserrank_wr_name" resultType="bookwriter">
+		SELECT B.B_ID, B.B_NAME, B.B_CATEGORY, B.B_WR_ID, W.B_WRITER, AVG(SC.BOOK_SCORE)
+		FROM BOOK B INNER JOIN BOOK_SCORE SC
+		ON B.B_ID = SC.B_ID INNER JOIN B_WRITER_T W
+        ON B.B_WR_ID = W.B_WR_ID
+		WHERE b.b_category = #{CATE}
+		GROUP BY B.B_ID, B.B_NAME, B.B_CATEGORY, B.B_WR_ID, W.B_WRITER
+		ORDER BY AVG(SC.BOOK_SCORE) DESC
+	</select>
+	
+	<!-- =================================================================== -->
+	
+	<insert id="bookreview_insert" parameterType="bookreview">
+		INSERT INTO B_REVIEW (r_id, b_id, member_id, nickname, sp_comm)
+		VALUES (B_REVIEW_SEQ.nextval, #{b_id}, #{member_id}, #{nickname}, #{sp_comm})
+	</insert>
+	
+	
+	<insert id="bookscore_insert" parameterType="bookscore">
+		INSERT INTO BOOK_SCORE (member_id, b_id, book_score)
+		values (1, #{b_id}, #{book_score})
+	</insert>
+	
+		
+	<delete id="bookreview_delete" parameterType="String">
+		DELETE FROM B_REVIEW 
+		WHERE R_ID = #{reviewid}
+	</delete>
+	
+	<delete id="bookscore_delete" parameterType="bookscore">
+		DELETE FROM BOOK_SCORE 
+		WHERE B_ID = #{b_id}
+		AND MEMBER_ID = #{member_id}
+	</delete>
+</mapper>
+
+
+
+
+
+
+
+

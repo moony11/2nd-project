@@ -1,0 +1,18 @@
+@charset "UTF-8";
+
+	.sidearea {
+		margin-left: 160px;
+		width: 200px;
+		background-color: white;
+		float: left;
+	}
+	
+	.sidebar {
+		width: 200px;
+		background-color: #FAFA96;
+	}
+	
+	.sidebar img {
+		margin: 10px 25px 5px 25px;
+		width: 150px;
+	}

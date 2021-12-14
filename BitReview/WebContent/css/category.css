@@ -1,0 +1,20 @@
+@charset "UTF-8";
+	
+	.category ul {
+		margin-left: 20%;
+		margin-right: 20%;
+		padding: 10px 10px 10px 10px;
+		font-weight: bold;
+		list-style-type: none;
+		background-color: gray;
+	}
+	
+	.category ul li {
+		display: inline-block;
+		list-style: none;
+		width: 12%;
+		padding: 5px 5px 5px 5px;
+		background-color: white;
+		text-align: center;
+	}
+	

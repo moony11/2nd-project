@@ -1,0 +1,43 @@
+@charset "UTF-8";
+	.listimg {
+		margin-left: 20%;
+		margin-right: 20%;
+		width: 100%;
+		max-width: 60%;
+		overflow: hidden;
+	}
+	
+	
+	
+	.listimg ul {
+		width: 100%;
+		list-style-type: none;
+	}
+	
+	.listimg ul li {
+		width : 25%;
+		float: left;
+		vertical-align: top; 
+	}
+	
+	.listimg ul li img{
+		width: 100%;
+		height: 100%;
+	}
+	
+	.listimg ul li .image{
+		width: 200px;
+		height: 280px;
+	}
+	
+	.listimg ul li .thumbtitle{
+		height: 25px;
+		overflow: hidden;
+	}
+	
+	.listimg ul li .thumbcomment{
+		width: 200px;
+		height: 25px;
+	}
+	
+	
