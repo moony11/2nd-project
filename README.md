@@ -6,9 +6,9 @@
 
 <br><br>               
 ### 2.소스코드
-  * [model](/final-project/tree/main/MeRoom/src/main/java/com/spring/mr/vo/)
-  * [view](/final-project/tree/main/MeRoom/src/main/webapp/views/)
-  * [controller](/final-project/tree/main/MeRoom/src/main/java/com/spring/mr/controller/)
+  * [model](/BitReview/src/com/br/model/vo/)
+  * [view](/BitReview/WebContent/movie/)
+  * [controller](/BitReview/src/com/br/controller/)
   
 <br><br>
 ### 3.구현ERD
